@@ -1,0 +1,38 @@
+environment:
+  matrix:
+  - julia_version: 1.6.1
+  - julia_version: nightly
+
+platform:
+  - x64 # 64-bit
+
+matrix:
+  allow_failures:
+  - julia_version: nightly
+
+branches:
+  only:
+    - master
+    - /release-.*/
+
+notifications:
+  - provider: Email
+    on_build_success: false
+    on_build_failure: false
+    on_build_status_changed: false
+
+install:
+  - ps: iex ((new-object net.webclient).DownloadString("https://raw.githubusercontent.com/JuliaCI/Appveyor.jl/version-1/bin/install.ps1"))
+
+build_script:
+  - set CONDA_JL_VERSION=3
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":PyCall")); Pkg.add(String(":PyPlot"))"
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":Plots")); Pkg.add(String(":DataFrames")); Pkg.add(String(":CSV"))"
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":Test")); Pkg.add(String(":StatsPlots")); Pkg.add(String(":Statistics"))"
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":FreqTables")); Pkg.add(String(":NamedArrays")); Pkg.add(String(":Distributions"))"
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":LinearAlgebra")); Pkg.add(String(":StatsBase")); Pkg.add(String(":PDMats")); Pkg.add(String(":Combinatorics"))"
+  - set PYTHON=""
+  - C:\julia\bin\julia -e "using Pkg; Pkg.add(String(":Conda")); Pkg.update(); Pkg.build(String(":PyCall")); using PyPlot"
+
+test_script:
+  - C:\julia\bin\julia test/runtests.jl
